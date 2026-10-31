@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Numerics;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using MudBlazor.State;
 using MudBlazor.Utilities;
 
@@ -296,6 +297,27 @@ namespace MudBlazor
             }
 
             return _valueState.SetValueAsync(arg.Value.GetValueOrDefault(T.Zero));
+        }
+
+        private bool _touchActive;
+
+        private string ValueLabelClassname =>
+            new CssBuilder("mud-slider-value-label")
+                .AddClass("mud-slider-value-label-visible", _touchActive)
+                .Build();
+
+        // Touch drags do not set :active or :focus on the range input, so the label is shown through a class instead.
+        private void OnPointerDown(PointerEventArgs args)
+        {
+            if (ValueLabel && args.PointerType != "mouse")
+            {
+                _touchActive = true;
+            }
+        }
+
+        private void OnPointerEnd(PointerEventArgs args)
+        {
+            _touchActive = false;
         }
 
         private string Width => CalculatePosition().ToString(CultureInfo.InvariantCulture);

@@ -4,6 +4,7 @@ using AngleSharp.Html.Dom;
 using AwesomeAssertions;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using MudBlazor.UnitTests.TestComponents.Slider;
 using NUnit.Framework;
 
@@ -365,6 +366,36 @@ namespace MudBlazor.UnitTests.Components
                 IElement Filling() => comp.Find(".mud-slider-filled");
                 Filling().GetAttribute("style").Should().Be($"width:{expectedPercentage}%;");
             }
+        }
+
+        [Test]
+        [TestCase("touch", true)]
+        [TestCase("pen", true)]
+        [TestCase("mouse", false)]
+        public void ValueLabel_PointerDown_ShowsLabelOnlyForTouchAndPen(string pointerType, bool expectedVisible)
+        {
+            // Touch drags do not trigger :active/:focus on the range input, so the label is shown via a CSS class (#11760).
+            var comp = Context.Render<MudSlider<double>>(x => x.Add(p => p.ValueLabel, true));
+
+            comp.Find(".mud-slider-value-label").ClassList.Should().NotContain("mud-slider-value-label-visible");
+
+            comp.Find("input").PointerDown(new PointerEventArgs { PointerType = pointerType });
+            comp.Find(".mud-slider-value-label").ClassList.Contains("mud-slider-value-label-visible").Should().Be(expectedVisible);
+
+            comp.Find("input").PointerUp(new PointerEventArgs { PointerType = pointerType });
+            comp.Find(".mud-slider-value-label").ClassList.Should().NotContain("mud-slider-value-label-visible");
+        }
+
+        [Test]
+        public void ValueLabel_PointerCancel_HidesLabel()
+        {
+            var comp = Context.Render<MudSlider<double>>(x => x.Add(p => p.ValueLabel, true));
+
+            comp.Find("input").PointerDown(new PointerEventArgs { PointerType = "touch" });
+            comp.Find(".mud-slider-value-label").ClassList.Should().Contain("mud-slider-value-label-visible");
+
+            comp.Find("input").PointerCancel(new PointerEventArgs { PointerType = "touch" });
+            comp.Find(".mud-slider-value-label").ClassList.Should().NotContain("mud-slider-value-label-visible");
         }
 
         [Test]

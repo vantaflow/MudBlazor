@@ -193,6 +193,10 @@
     transition: opacity .2s ease-in-out;
     pointer-events: none;
     user-select: none;
+
+    &.mud-slider-value-label-visible {
+      opacity: 1;
+    }
   }
 
   .mud-application-layout-rtl & .mud-slider-value-label {
